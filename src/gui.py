@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QVB
 from PyQt5.QtCore import Qt
 import sys
 import time
-from pynput.keyboard import Key, Controller
+from pynput.keyboard import Controller
 from pynput import keyboard
 
 
@@ -44,8 +44,10 @@ class MainWindow(QMainWindow):
         self.dropdown.addItems(["Repeat Key", "Stop/Pause key", "Tick Interval"])
         combo_layout.addWidget(self.dropdown)
 
-        self.label = QLabel("Hello, world!")
-        combo_layout.addWidget(self.label)
+        self.error_label = QLabel("Error label")
+        combo_layout.addWidget(self.error_label)
+        self.info_label = QLabel(f"Repeating: {self.repeat_value}, Pause: {self.stop_value}, Tick: {self.interval}\nClick your pause key to begin")
+        combo_layout.addWidget(self.info_label)
 
         main_layout.addLayout(row_layout)
         main_layout.addLayout(combo_layout)
@@ -54,24 +56,29 @@ class MainWindow(QMainWindow):
         if self.dropdown.currentText() == "Repeat Key":
             if len(self.input_field.text()) == 1:
                 self.repeat_value = self.input_field.text()
-                self.label.setText("Error label")
+                self.error_label.setText("Error label")
             else:
-                self.label.setText("Must be 1 letter")
+                self.error_label.setText("Must be 1 letter")
 
         elif self.dropdown.currentText() == "Stop/Pause key":
             if len(self.input_field.text()) == 1:
-                self.label.setText("Error label")
+                self.error_label.setText("Error label")
                 self.stop_value = self.input_field.text()
             else:
-                self.label.setText("Must be 1 letter")
+                self.error_label.setText("Must be 1 letter")
 
         elif self.dropdown.currentText() == "Tick Interval":
             try:
                 interval = float(self.input_field.text())
-                self.interval = interval
-                self.label.setText("Error label")
+                if interval <= 0:
+                    self.error_label.setText("Must positive value")
+                else:
+                    self.interval = interval
+                    self.error_label.setText("Error label")
             except ValueError:
-                self.label.setText("Must be an integer/decimal value")
+                self.error_label.setText("Must be an integer/decimal value")
+
+        self.info_label.setText(f"Repeating: {self.repeat_value}, Pause: {self.stop_value}, Tick: {self.interval}\nClick your pause key to begin")
 
     def repeat(self):
         while True:
@@ -79,7 +86,6 @@ class MainWindow(QMainWindow):
                 time.sleep(self.interval)
                 self.keycon.press(f"{self.repeat_value}")
             else:
-                print(window.pause_value, "IM HERE 4")
                 break
 
 if __name__ == "__main__":
@@ -89,15 +95,11 @@ if __name__ == "__main__":
 
     def on_press(key):
         if str(format(key)).lower() == "'" + window.stop_value.lower() + "'":
-            print(window.pause_value, "IM HERE 3")
             if window.pause_value:
                 window.pause_value = False
-                print(window.pause_value, "IM HERE 1")
             else:
                 window.pause_value = True
-                print(window.pause_value, "IM HERE 2")
-                thread = threading.Thread(target=window.repeat).start()
-                print("IM HERE 5")
+                threading.Thread(target=window.repeat).start()
 
     listener = keyboard.Listener(
         on_press=on_press, )
