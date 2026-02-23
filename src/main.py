@@ -4,7 +4,6 @@ from pynput.keyboard import Key, Controller
 from pynput import keyboard
 import time
 
-
 class Establish:
     def __init__(self):
         self.break_key = ""
@@ -39,16 +38,12 @@ class Establish:
             time.sleep(self.interval)
             self.keycon.press(f"{self.repeat_key}")
 
-
 def on_press(key):
-    print("\n\n",key, obj.break_key,"\n\n")
     if str(format(key)).lower() == "'" + obj.break_key.lower() + "'":
         os._exit(0)
 
 listener = keyboard.Listener(
-    on_press=on_press,
-)
-
+    on_press=on_press,)
 
 obj = Establish()
 est_thread = threading.Thread(target=obj.establish)
@@ -56,7 +51,3 @@ est_thread.start()
 
 listener.start()
 listener.join()
-
-
-
-
